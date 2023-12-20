@@ -1,25 +1,27 @@
 #include "TStatus.h"
 
-TStatus::TStatus(int _tact, int _intensity, int _counter, int _power) : queue(_counter), taskStream(_intensity), proc(_power), tact(_tact), incoming(0), wait(0), ignored(0), completed(0)
+TStatus::TStatus(int _tact, int _intensity, int _counter, int _power) : queue(_counter), taskStream(_intensity), proc(_power), incoming(0), wait(0), ignored(0), completed(0)
 {
+	if (_tact < 0)
+		throw 4;
+	tact = _tact;
 }
 
 void TStatus::process()
 {
-	std::cout << "Starting task completing...\n";
+	std::cout << "Starting task completing...\n\n";
+
+	bool prev = false;
 
 	if (tact > 20) {
 
 		for (int i = 0; i < tact; i++) {
 
-			bool prev = false;
-
 			if (taskStream.isNewTask()) {
 
 				if (!queue.IsFull()) {
 
-					queue.Push(i);
-					prev = true;
+					queue.Push(incoming);
 					incoming++;
 
 				}
@@ -35,9 +37,11 @@ void TStatus::process()
 				if (!queue.IsEmpty()) {
 					queue.Pop();
 					completed++;
+					prev = true;
 				}
-				
+
 				else {
+					prev = false;
 					wait++;
 				}
 
@@ -46,11 +50,11 @@ void TStatus::process()
 		}
 
 	}
-	
+
 	else {
+
 		for (int i = 0; i < tact; i++) {
 
-			bool prev = false;
 			std::cout << i << ": ";
 
 			if (taskStream.isNewTask()) {
@@ -61,8 +65,7 @@ void TStatus::process()
 
 					std::cout << " Is added to queue.\n";
 
-					queue.Push(i);
-					prev = true;
+					queue.Push(incoming);
 					incoming++;
 
 				}
@@ -84,9 +87,7 @@ void TStatus::process()
 
 				if (!queue.IsEmpty()) {
 
-					std::cout << " and took a task.\n";
-
-					queue.Pop();
+					std::cout << " and took a task #" << queue.Pop() << "\n";
 					prev = true;
 					completed++;
 
@@ -109,9 +110,35 @@ void TStatus::process()
 		}
 
 	}
-	
+
+	bool err5Flag = false;
+
 	std::cout << "Camed tasks count - " << incoming << std::endl;
-	std::cout << "Ignored tasks percent - " << (double)ignored * 100 / (double)(ignored + incoming) << "%\n";
-	std::cout << "Average completing tasks time - " << (double)(tact - wait) / (double)completed << std::endl;
-	std::cout << "Delayed tasks percent - " << (double)wait * 100 / (double)tact  << "%\n";
+
+	if (ignored == 0 && incoming == 0) {
+		err5Flag = true;
+		std::cout << "Ignored tasks percent - undefined value.\n";
+	}
+	else {
+		std::cout << "Ignored tasks percent - " << (double)ignored * 100 / (double)(ignored + incoming) << "%\n";
+	}
+
+	if (completed == 0) {
+		err5Flag = true;
+		std::cout << "Average completing tasks time - undefined value.\n";
+	}
+	else {
+		std::cout << "Average completing tasks time - " << (double)(tact - wait) / (double)completed << std::endl;
+	}
+
+	if (tact == 0) {
+		err5Flag = true;
+		std::cout << "Delayed tasks percent - undefined value.\n";
+	}
+	else {
+		std::cout << "Delayed tasks percent - " << (double)wait * 100 / (double)tact << "%\n";
+	}
+
+	if (err5Flag)
+		throw 5;
 }
