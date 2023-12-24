@@ -2,7 +2,7 @@
 
 TTaskStream::TTaskStream(const int& _intencity)
 {
-	if (_intencity < 0)
+	if (_intencity < 0 || _intencity > 100)
 		throw 2;
 	intencity = _intencity;
 }

@@ -2,7 +2,7 @@
 
 TProc::TProc(const int& _power)
 {
-	if (_power < 0)
+	if (_power < 0 || _power > 100)
 		throw 3;
 	power = _power;
 }
